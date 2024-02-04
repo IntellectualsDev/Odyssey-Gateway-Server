@@ -105,6 +105,7 @@ void GlobalNetworkManager::authenticateClient() {
 
 void GlobalNetworkManager::distributePacketToAssetManager(ENetPacket *packet) {
 
+    // call AssetManagers enqueuePackets function here
 }
 
 void GlobalNetworkManager::distributePacketToGameLobby(ENetPacket *packet, int lobbyID) {

@@ -9,6 +9,7 @@
 #include <queue>
 #include <mutex>
 #include <thread>
+#include <condition_variable>
 
 using namespace std;
 
@@ -17,8 +18,10 @@ private:
     queue<ENetPacket*> packetBuffer;
     mutex bufferLock;
     thread listenForNewPackets;
-    bool newpacketFlag;
+    condition_variable newPacketCondition;
     bool running;
+
+//    bool newpacketFlag;
 
 public:
     AssetManager();
@@ -28,7 +31,7 @@ public:
     void shutDown();
     void listenForNewRequests();
     void enquePackets(ENetPacket* packet);
-    ENetPacket* dequePackets();
+//    ENetPacket* dequePackets();
     void processPacket(ENetPacket *packet);
 
     const queue<ENetPacket *> &getPacketBuffer() const;

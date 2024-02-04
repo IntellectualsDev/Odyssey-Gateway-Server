@@ -22,37 +22,56 @@ void AssetManager::shutDown(){
 }
 
 void AssetManager::listenForNewRequests(){
+    unique_lock<mutex> lock(bufferLock); // initially lock the buffer
     while(running){
-        if(newpacketFlag){
-            ENetPacket *packet = dequePackets();
-            if(packet != nullptr){
-                processPacket(packet);
+        newPacketCondition.wait(lock, [this]{  // during wait the lock is unlocked do other threads can access
+            return !packetBuffer.empty() || !running;
+        });
 
-                // TODO
-            }
+        if(!running){
+            break;
         }
+
+        ENetPacket * packet = packetBuffer.front();
+        packetBuffer.pop();
+        lock.unlock(); // unlock while processing packet dequed
+
+        processPacket(packet);
+        lock.lock(); // re-lock to check the condition or wait again
     }
+//
+//    while(running){
+//        if(newpacketFlag){
+//            ENetPacket *packet = dequePackets();
+//            if(packet != nullptr){
+//                processPacket(packet);
+//
+//                // TODO: any cleanup needed
+//            }
+//        }
+//    }
 }
 
 
 void AssetManager::enquePackets(ENetPacket *packet) {
     lock_guard<mutex> guard(bufferLock);
     packetBuffer.push(packet);
-    newpacketFlag = true;
+    newPacketCondition.notify_one(); //notify the waiting thread that a packet has been added
+//    newpacketFlag = true;
 }
 
-ENetPacket* AssetManager::dequePackets() {
-    lock_guard<mutex> guard(bufferLock);
-    if(!packetBuffer.empty()){
-        ENetPacket *front = packetBuffer.front();
-        packetBuffer.pop();
-        return front;
-    }
-    else{
-        newpacketFlag = false;
-        return nullptr;
-    }
-}
+//ENetPacket* AssetManager::dequePackets() {
+//    lock_guard<mutex> guard(bufferLock);
+//    if(!packetBuffer.empty()){
+//        ENetPacket *front = packetBuffer.front();
+//        packetBuffer.pop();
+//        return front;
+//    }
+//    else{
+//        newpacketFlag = false;
+//        return nullptr;
+//    }
+//}
 
 void AssetManager::processPacket(ENetPacket *packet) {
 //    TODO: Decode packet unserialize/parse JSON contents
