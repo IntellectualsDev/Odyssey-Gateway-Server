@@ -1,7 +1,14 @@
 #include <iostream>
 using namespace std;
-
 #include <enet/enet.h>
+
+ENetAddress address;
+ENetHost * server;
+ENetEvent event;
+
+
+
+
 
 int main() {
     if (enet_initialize() != 0){
