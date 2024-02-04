@@ -6,8 +6,8 @@
 
 
 
-GlobalNetworkManager::GlobalNetworkManager() {
-
+GlobalNetworkManager::GlobalNetworkManager(int port, int clients, int channels) {
+    initialize(port, clients, channels);
 }
 
 GlobalNetworkManager::~GlobalNetworkManager() {
@@ -65,11 +65,7 @@ void GlobalNetworkManager::networkLoop() {
                        networkEvent.packet->data,
                        networkEvent.peer->data,
                        networkEvent.channelID);
-
-                // TODO: parse packet and determine if:
-                //  (1) new client --> authenticate client + store MAC Address (ID)
-                //  (2) existing client -> distribute to lobby
-                //  (3) client requesting game assets --> authenticate
+                handleIncomingPacket(networkEvent.packet);
 
             case ENET_EVENT_TYPE_DISCONNECT:
                 printf("%s disconnected ", networkEvent.peer->address.host);
@@ -81,8 +77,25 @@ void GlobalNetworkManager::networkLoop() {
     }
 }
 
-void GlobalNetworkManager::handleIncomingPacket(ENetAddress *packet) {
+void GlobalNetworkManager::handleIncomingPacket(ENetPacket *packet) {
+    enet_uint8 *data = packet->data; //stored data
+    // if serialized unserialize, or parse the sent JSON
+    // TODO: Create Unserialize/JSON parses
 
+
+    // TODO: parse packet and determine if:
+    //  (1) new client --> authenticate client + store MAC Address (ID)
+    //  (2) existing client -> distribute to lobby
+    //  (3) client requesting game assets --> authenticate
+//    if(new client){
+//        authenticateClient();
+//    }
+//    if(existing client){
+//        distributePacketToGameLobby();
+//    }
+//    if(client requesting game assets){
+//        distributePacketToAssetManager();
+//    }
 
 }
 
@@ -98,7 +111,7 @@ void GlobalNetworkManager::distributePacketToGameLobby(ENetPacket *packet, int l
 
 }
 
-void GlobalNetworkManager::shutdown() {
+void GlobalNetworkManager::shutDown() {
     running = false;
 
     // execute any work leftover in the Network Thread

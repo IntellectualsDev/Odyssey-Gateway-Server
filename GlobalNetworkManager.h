@@ -33,18 +33,18 @@ private:
     map<int, vector<Player>> lobbyList; // map lobbyID generated to a list of players (replace with Lobby object)
 
     void networkLoop();
-    void handleIncomingPacket(ENetAddress * packet);
+    void handleIncomingPacket(ENetPacket *packet);
     void authenticateClient();
     void distributePacketToAssetManager(ENetPacket * packet);
     void distributePacketToGameLobby(ENetPacket *packet, int lobbyID);
 
 public:
-    GlobalNetworkManager();
+    GlobalNetworkManager(int port, int clients, int channels);
     ~GlobalNetworkManager();
 
     bool initialize(int port, int clients, int channels);
     void run();
-    void shutdown();
+    void shutDown();
     ENetHost * getServer();
     void setServer(ENetHost *server);
     ENetAddress getAddress();
