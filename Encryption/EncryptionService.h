@@ -1,0 +1,16 @@
+//
+// Created by Anshul Gowda on 2/4/24.
+//
+
+#ifndef ODYSSEYGAMESERVER_ENCRYPTIONSERVICE_H
+#define ODYSSEYGAMESERVER_ENCRYPTIONSERVICE_H
+
+
+class EncryptionService {
+public:
+
+
+};
+
+
+#endif //ODYSSEYGAMESERVER_ENCRYPTIONSERVICE_H

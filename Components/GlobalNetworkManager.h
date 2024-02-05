@@ -11,7 +11,7 @@
 #include <thread>
 #include <mutex>
 #include <map>
-#include "Player.h"
+#include "../Player.h"
 
 
 using namespace std;

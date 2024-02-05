@@ -100,6 +100,7 @@ void GlobalNetworkManager::handleIncomingPacket(ENetPacket *packet) {
 }
 
 void GlobalNetworkManager::authenticateClient() {
+    // TODO
 
 }
 
