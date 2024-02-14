@@ -6,8 +6,8 @@
 #define ODYSSEYGAMESERVER_PACKETBUFFER_H
 
 #include <enet/enet.h>
-#include <thread>;
-#include <condition_variable>;
+#include <thread>
+#include <condition_variable>
 #include <functional>
 #include <map>
 #include <string>

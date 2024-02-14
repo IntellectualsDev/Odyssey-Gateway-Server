@@ -26,7 +26,7 @@ int Player::getPort() const {
 }
 
 void Player::setPort(int port) {
-    this.port = port;
+    this->port = port;
 }
 
 int Player::getClientId() const {

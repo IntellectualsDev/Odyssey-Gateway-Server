@@ -1,24 +1,26 @@
 #include <iostream>
-using namespace std;
 #include <enet/enet.h>
+#include "Servers/DummyServer.h"
+#include <thread>
 
-ENetAddress address;
-ENetHost * server;
-ENetEvent event;
-
-
-
-
+using namespace std;
 
 int main() {
-    if (enet_initialize() != 0){
-        fprintf(stderr, "An error occurred while initializing ENet.\n");
+    if (enet_initialize () != 0)
+    {
+        fprintf (stderr, "An error occurred while initializing ENet.\n");
         return EXIT_FAILURE;
     }
-    else{
-        fprintf(stdout, "ENet was properly initialized.\n");
+    atexit (enet_deinitialize);
+
+    DummyServer server = DummyServer("127.0.0.1", 5450);
+    while(true){
+        server.listenForPacket();
     }
-    atexit(enet_deinitialize);
+
+//    DummyClient client = DummyClient();
+//    this_thread::sleep_for(chrono::seconds(2));
+//    client.connect("127.0.0.1", 5450);
 
     return 0;
 }

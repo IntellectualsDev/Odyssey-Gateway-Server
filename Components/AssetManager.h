@@ -37,7 +37,7 @@ public:
     const queue<ENetPacket *> &getPacketBuffer() const;
     void setPacketBuffer(const queue<ENetPacket *> &packetBuffer);
     const mutex &getBufferLock() const;
-    void setBufferLock(const mutex &bufferLock);
+    void setBufferLock(const mutex bufferLock);
 };
 
 

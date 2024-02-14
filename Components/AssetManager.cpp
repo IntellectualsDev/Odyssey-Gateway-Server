@@ -94,8 +94,8 @@ const mutex &AssetManager::getBufferLock() const {
     return bufferLock;
 }
 
-void AssetManager::setBufferLock(const mutex &bufferLock) {
-    AssetManager::bufferLock = bufferLock;
-}
+//void AssetManager::setBufferLock(const mutex bufferLock) {
+//    AssetManager::bufferLock = bufferLock;
+//}
 
 
