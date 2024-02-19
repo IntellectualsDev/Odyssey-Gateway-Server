@@ -1,7 +1,8 @@
-#include <iostream>
+//#include <iostream>
 #include <enet/enet.h>
-#include "Servers/DummyServer.h"
 #include <thread>
+
+#include "Servers/GatewayServer.h"
 
 using namespace std;
 
@@ -13,14 +14,11 @@ int main() {
     }
     atexit (enet_deinitialize);
 
-    DummyServer server = DummyServer("127.0.0.1", 5450);
-    while(true){
-        server.listenForPacket();
-    }
+    // only allows max 4000 connections
 
-//    DummyClient client = DummyClient();
-//    this_thread::sleep_for(chrono::seconds(2));
-//    client.connect("127.0.0.1", 5450);
-
-    return 0;
+    auto gateway = new GatewayServer("127.0.0.1", 4650, 3500, 20, 0, 0);
+    this_thread::sleep_for(chrono::seconds(2));
+    gateway->run();
+    this_thread::sleep_for(chrono::seconds(2));
+    gateway->shutdown();
 }

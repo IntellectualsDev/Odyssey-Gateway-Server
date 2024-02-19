@@ -4,54 +4,60 @@
 
 #include "PacketBuffer.h"
 
-PacketBuffer::SubscriptionHandle PacketBuffer::subscribe(const std::string& topic, SubscriberCallback callback) {
-    unique_lock<mutex> lock(bufferMutex);
-    auto handle = subscriberHandleNext++;
-    subscribers[topic][handle] = callback;
-    return handle; // this handle can be used to go identify a subscriber's specific callback when they unsub
-}
+using namespace std;
 
-void PacketBuffer::unsubscribe(const std::string &topic, SubscriptionHandle handle) {
-    unique_lock<mutex> lock(bufferMutex);
-    if(subscribers.find(topic) != subscribers.end()){
-        subscribers[topic].erase(handle);
-        if(subscribers[topic].empty()){
-            subscribers.erase(topic);
+PacketBuffer::PacketBuffer():
+shutdownFlag(false), numberOfPackets(0) {}
+
+void PacketBuffer::addPacket(unique_ptr<Packet> packet) {
+    {
+        unique_lock<mutex> lock(bufferMutex);
+
+        if(shutdownFlag){
+            cout << "Packet Buffer is in shutdown. Packets cannot be queued for service in shutdown." << endl;
+            // TODO: deal with packets already in the system. Don't want data loss
+            return;
         }
+        packetQueue.push(std::move(packet));
+        numberOfPackets++;
     }
+
+    buffer_Condition.notify_one();
 }
 
-void PacketBuffer::publish(const std::string &topic, ENetPacket *packet) {
-    unique_lock<mutex> lock(bufferMutex);
-    messagesQueue.emplace(topic, packet); // emplace adds to end of queue, but no copy/move instead the args are passed to the constructor
-    buffer_Condition.notify_one(); // TODO: which thread is this notifying?
-}
+/*
+ * In removePacket() a lock based on the bufferMutex mutex is acquired, once acquired if the queue is empty the thread enters a wait
+ * state based upon the buffer_Condition condition variable and it gives up the lock. This condition variable is passed the lock. Thus when this thread is
+ * notified to wake up by cv.notify_one() or cv.notify_all() it will wake up and try to reacquire the lock (handled by the wait funciton)
+ * , and once it reacquires the lock it will begin the service the request.
+ */
+unique_ptr<Packet> PacketBuffer::removePacket() {
+    unique_lock<mutex> lock(bufferMutex); // lock the buffer
 
+    // enter wait state and unlock lock until the packetQueue is notified, then check if it satisfies the lambda function if not
+    // go back to waiting. This approach prevents random wakeups as even if it is woken up randomly it will not proceed unless it
+    // can
+    buffer_Condition.wait(lock, [this] {
+        return (!packetQueue.empty() || shutdownFlag.load());
+    });
 
-
-void PacketBuffer::processMessages() {
-    while(true){
-        pair<string, ENetPacket*> message;
-        {
-            unique_lock<mutex> lock(bufferMutex); // lock from others accessing in this scope
-            buffer_Condition.wait(lock, [this] { // unlock the scope & wait until the messageQueue is not empty
-                return !messagesQueue.empty();
-            });
-
-            // once exited wait, pull out from the front of the queue
-            message = messagesQueue.front();
-            messagesQueue.pop();
-        }
-
-        // exit scope of lock to allow other threads to modify the queue
-        auto& [topic, packet] = message;
-        auto sub_iterator = subscribers.find(topic);
-
-        // notify all those
-        if(sub_iterator != subscribers.end()){
-            for(auto &[handle, callback]: sub_iterator->second){
-                callback(packet);
-            }
-        }
+    if(packetQueue.empty() && shutdownFlag.load()){
+        cout << "Packet Buffer is in shutDown. " << shutdownFlag.load() << endl << "All existing packets have been serviced.";
+        return nullptr; //
     }
+
+    auto packet = std::move(packetQueue.front()); // pull out the packet
+    packetQueue.pop();
+    numberOfPackets--;
+    return packet;
 }
+
+void PacketBuffer::notifyAll() {
+    buffer_Condition.notify_all();
+}
+
+void PacketBuffer::shutdown() {
+    shutdownFlag.store(true);
+    buffer_Condition.notify_all(); // wake all threads waiting of this shutdown command
+}
+
