@@ -16,9 +16,13 @@ int main() {
 
     // only allows max 4000 connections
 
-    auto gateway = new GatewayServer("127.0.0.1", 4650, 3500, 20, 0, 0);
+    auto gateway = new GatewayServer("127.0.0.1", 5450, 3500, 20, 0, 0);
+
     this_thread::sleep_for(chrono::seconds(2));
-    gateway->run();
-    this_thread::sleep_for(chrono::seconds(2));
+
+    gateway->start();
+    this_thread::sleep_for(chrono::seconds(15));
+
     gateway->shutdown();
+    cout << "Shutdown Complete. Exiting :)" << endl;
 }

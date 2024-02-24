@@ -29,7 +29,7 @@ void ExecutorSlave::stop() {
 void ExecutorSlave::run() {
     while(!stopFlag.load()){
         auto packet = buffer.removePacket();
-        if(packet){
+        if(packet)
             processPacket(std::move(packet)); // transfer ownership of the packet to the ExecutorSlave scope
         }
         else{
@@ -40,6 +40,11 @@ void ExecutorSlave::run() {
 }
 
 void ExecutorSlave::processPacket(unique_ptr<Packet> packet) {
-    cout << packet->label << endl;
-    printf("Packet Data: %x", packet->packet->data);
+    printf("Executor Slave stole packet of size %zu and data = \"%s\"\n\n", packet->packet->dataLength, packet->packet->data);
+
+    // TODO: determine output actions:
+    //  (1) DMG requesting Game Files --> Forward AssetManager MicroService contact information
+    //  (2) Player requesting to join game --> Authenticate via Auth MicroService(blocking) & pass newest GameServer info
+    //  (3)
+
 }

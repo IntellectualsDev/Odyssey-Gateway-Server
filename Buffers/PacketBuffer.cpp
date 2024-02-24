@@ -14,12 +14,13 @@ void PacketBuffer::addPacket(unique_ptr<Packet> packet) {
         unique_lock<mutex> lock(bufferMutex);
 
         if(shutdownFlag){
-            cout << "Packet Buffer is in shutdown. Packets cannot be queued for service in shutdown." << endl;
+            cout << "Packet Buffer is in shutdown. Packets cannot be queued for service in shutdown.\n" << endl;
             // TODO: deal with packets already in the system. Don't want data loss
             return;
         }
         packetQueue.push(std::move(packet));
         numberOfPackets++;
+        printf("Packet received in Receive Buffer.\n\tlength = %zu\n\tdata = %s\n", packetQueue.front()->packet->dataLength, packetQueue.front()->packet->data);
     }
 
     buffer_Condition.notify_one();
@@ -42,7 +43,7 @@ unique_ptr<Packet> PacketBuffer::removePacket() {
     });
 
     if(packetQueue.empty() && shutdownFlag.load()){
-        cout << "Packet Buffer is in shutDown. " << shutdownFlag.load() << endl << "All existing packets have been serviced.";
+        cout << "Packet Buffer is in shutDown. " << shutdownFlag.load() << endl << "All existing packets have been serviced." << endl;
         return nullptr; //
     }
 

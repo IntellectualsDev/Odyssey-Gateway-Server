@@ -47,7 +47,7 @@ using SubscriberCallback = function<void (const Packet*)>;
 class PacketBuffer {
     public:
         PacketBuffer();
-        ~PacketBuffer();
+//        ~PacketBuffer();
 
         // delete the copy constructor and copy assignment operator
         // This is because in our multi-threaded context the Packet Buffer is shared between components and it has unique ownership

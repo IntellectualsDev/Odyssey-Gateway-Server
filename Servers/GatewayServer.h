@@ -15,6 +15,8 @@
 #include <iostream>
 #include "../Player.h"
 #include "../Buffers/PacketBuffer.h"
+#include "../Components/Gateway.h"
+#include "../Components/ExecutorSlave.h"
 
 
 using namespace std;
@@ -26,48 +28,47 @@ using namespace std;
  */
 
 class GatewayServer {
-private:
-    ENetHost *server;
-    ENetAddress address;
-    int port;
-    string serverIP;
-    thread networkThread;
-    mutex networkMutex;
-    condition_variable networkCV;
-    atomic<bool> running = false;
+public:
+    GatewayServer(string gatewayServerIP, int gatewayServerPort, int maxConnections, int numChannels, int incomingBandwith, int outgoingBandwith);
+    ~GatewayServer();
 
-    map<string, pair<string, ENetPeer *>> clientList;
-    deque<pair<string, ENetPeer *>> gameServerStack;
-// possible stack architecture to keep the newest servers at the top
-    vector<pair<string, string>> activeGameServers; // (IP, Port) to forward requests
+    // run method
+    void start();
+
+    // shutdown method
+    void shutdown();
+
+    void determineNumExecutorSlaves();
+
+    void addGameServer();
+
+    void removeGameServer();
+
+private:
+    PacketBuffer receiveBuffer;
+    PacketBuffer outputBuffer;
 
     // Components:
-    PacketBuffer receiveBuffer;
+    Gateway gateway;
+    vector<ExecutorSlave*> executorSlaves;
 
-    // create the middle buffer
+    int numExecSlaves = 10;
+    deque<pair<string, ENetPeer *>> gameServerStack; // possible stack architecture to keep the newest servers at the top
+    vector<pair<string, string>> activeGameServers; // (IP, Port) to forward requests
 
-    // network loop`
-    void networkLoop();
+    // TODO spawn Executor Slaves;
+
+
+
+    // TODO: find a way for the Executor Slaves to access these global functions. One example is that the Gateway Server should
+    // know and house which game servers are active since that is global information, but the ExecutorSlaves must know so that
+    // they know where to forward requests
 
     // authenticate client
     void authenticateClient();
 
     // relevant methods to forward packets to other microservices
     void forwardClientToGameServer();
-
-public:
-    GatewayServer(string gatewayServerIP, int gatewayServerPort, int maxConnections, int numChannels, int incomingBandwith, int outgoingBandwith);
-
-    ~GatewayServer();
-
-    // run method
-    void run();;
-
-    // shutdown method
-    bool shutdown();
-    // connect method
-
-
 
 };
 #endif //ODYSSEYGAMESERVER_GATEWAYSERVER_H
