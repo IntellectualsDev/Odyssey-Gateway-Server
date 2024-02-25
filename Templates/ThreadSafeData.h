@@ -9,7 +9,6 @@
 
 using namespace std;
 
-
 class ThreadSafeData {
 public:
     ThreadSafeData() = default;
