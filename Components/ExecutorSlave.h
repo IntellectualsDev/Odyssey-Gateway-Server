@@ -33,7 +33,7 @@ private:
     thread workerThread;
 
     void run();
-    void processPacket(unique_ptr<Packet> packet);
+    static void processPacket(unique_ptr<Packet> packet);
 };
 
 
