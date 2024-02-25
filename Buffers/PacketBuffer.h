@@ -37,9 +37,17 @@ struct Packet {
     ENetPacket *packet;
     chrono::high_resolution_clock::time_point timeAdded;
 
+    bool isSendAddressSet;
+    ENetAddress toSendAddress;
+    int toSendChannel;
+
     Packet(string lbl, ENetPacket* pkt)
-    : label(std::move(lbl)), packet(pkt), timeAdded(chrono::high_resolution_clock::now())
-    {};
+    : label(std::move(lbl)), packet(pkt), timeAdded(chrono::high_resolution_clock::now()), isSendAddressSet(false)
+    {
+        toSendAddress.host = ENET_HOST_ANY;
+        toSendAddress.port = 0;
+        toSendChannel = -1;
+    };
 };
 
 using SubscriberCallback = function<void (const Packet*)>;
